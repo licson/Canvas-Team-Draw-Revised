@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta charset="utf-8">
+		<title>Lobby - Canvas Team Draw</title>
+		<link href="//fonts.googleapis.com/css?family=Patrick+Hand+SC" rel="stylesheet" type="text/css">
+		<link href="css/bootstrap.css" rel="stylesheet" type="text/css">
+		<link href="css/bootstrap-responsive.css" rel="stylesheet" type="text/css">
+		<link href="css/styles.css" rel="stylesheet" type="text/css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		<script src="/js/bootstrap.min.js"></script>
+	</head>
+	<body>	
+		<div class="container">
+			<div id="mainArea" class="rooms">
+				<h1>Lobby</h1>
+				<ul class="thumbnails">
+					<%
+					var count = 0;
+					for(var i in rooms){
+						if(i === '') continue;
+						count++;
+					%>
+					<li class="span4">
+						<div class="thumbnail">
+							<a href="./#<%= i.substr(1) %>">Room <%= i.substr(1) %></a>
+							<h3><%= rooms[i].length %> users.</h3>
+							<a href="#" data-toggle="collapse" data-target="#users-<%= count %>">Show all users in this room <i class="carat"></i></a>
+							<div id="users-<%= count %>" class="collapse">
+								<ul>
+									<% for(var j = 0; j < rooms[i].length; j++){ %>
+									<li>User <%= rooms[i][j] %></li>
+									<% } %>
+								</ul>
+							</div>
+						</div>
+					</li>
+					<% } %>
+				</ul>
+				<% if(count === 0){ %>
+				<em class="muted">No rooms yet. <a href="/">Create your room!</a></em>
+				<% } %>
+			</div>
+			<div id="bottom">
+				<div id="bottomWrap"><a href="/" class="brand">Canvas Team Draw</a></div>
+			</div>
+		</div>
+	</body>
+</html>
