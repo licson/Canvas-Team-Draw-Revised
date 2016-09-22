@@ -57,6 +57,7 @@
 			this.canvaso.height = h;
 			this.canvas.width = w;
 			this.canvas.height = h;
+			this.ctx.strokeStyle = this.colour;
 		}
 
 		this.setSize(window.innerWidth, window.innerHeight - 50);
@@ -68,6 +69,7 @@
 		this.toolSelect.change(function () {
 			self.currentTool = $(this).val();
 		});
+
 		this.toolSelect.val(this.currentTool);
 		this.addTool = function (name, tool) {
 			this.tools[name] = new tool();
@@ -77,6 +79,7 @@
 		this.update = function () {
 			socket.emit('update', {
 				type: self.currentTool,
+				colour: self.ctx.strokeStyle,
 				data: self.tools[self.currentTool].data
 			});
 			self.ctxo.drawImage(this.canvas, 0, 0);
@@ -106,13 +109,13 @@
 			}
 		}
 
-		this.toNormalizedCoords = function(coords){
+		this.toNormalizedCoords = function (coords) {
 			var hw = self.canvaso.width / 2;
 			var hh = self.canvaso.height / 2;
 			return [-(hw - coords[0]), hh - coords[1]];
 		}
 
-		this.toAbsoluteCoords = function(coords){
+		this.toAbsoluteCoords = function (coords) {
 			var hw = self.canvaso.width / 2;
 			var hh = self.canvaso.height / 2;
 			return [hw + coords[0], hh - coords[1]];
@@ -128,6 +131,9 @@
 		} else {
 			$('#startup').modal();
 		}
+
+		this.colour = '#' + Math.round(Math.random() * 0xe6e6e6).toString(16);
+		this.ctx.strokeStyle = this.colour;
 
 		$('#joinroom').click(function () {
 			socket.emit('join_session');
@@ -147,17 +153,33 @@
 
 		// Handle data from the server
 		socket.on('session_created', function (id) {
-			this.sess_id = id;
-			window.location.hash = '#' + this.sess_id;
+			self.sess_id = id;
+			window.location.hash = '#' + self.sess_id;
+
+			// Send our own brush colour
+			socket.emit('user_colour', self.colour);
+
+			// Add ourselves to user list
+			self.users[socket.id] = self.colour;
+
 			$('#share').modal();
 		});
+
 		socket.on('new_user', function (id) {
 			$('#user_joined .user').text(id);
 			$('#user_joined').fadeIn(500).delay(2000).fadeOut(500);
 		});
+
+		socket.on('user_left', function (id) {
+			$('#user_left .user').text(id);
+			$('#user_left').fadeIn(500).delay(2000).fadeOut(500);
+		});
+
 		socket.on('update', function (data) {
+			self.ctxo.strokeStyle = data.colour;
 			self.tools[data.type].render(data.data);
 		});
+
 		socket.on('clear', function (id) {
 			self.ctxo.clearRect(0, 0, self.canvaso.width, self.canvaso.height);
 			$('#user_cleared .user').text(id);

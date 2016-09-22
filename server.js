@@ -43,7 +43,7 @@ var createSession = function () {
 
 var pickRandomProp = function (obj) {
 	var keys = Object.keys(obj);
-	return obj[keys[~~(keys.length * Math.random())].substr(1)];
+	return keys[~~(keys.length * Math.random())].substr(1);
 }
 
 app.use(express.static(__dirname));
@@ -96,6 +96,10 @@ io.sockets.on('connection', function (socket) {
 		}
 	});
 
+	socket.on('user_colour', function (colour) {
+		socket.set('colour', colour);
+	});
+
 	socket.on('update', function (data) {
 		socket.get('id', function (e, id) {
 			if (!e) {
@@ -114,7 +118,9 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	socket.on('disconnect', function () {
-		socket.broadcast.emit('user_left', socket.id);
+		socket.get('id', function (e, id) {
+			socket.broadcast.to(id).emit('user_left', socket.id);
+		});
 		console.log('User ' + socket.id + ' has left');
 	});
 });
